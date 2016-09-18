@@ -4,6 +4,7 @@
 #define DATA_SELECTION_INTERFACES_H
 
 #include <QVector>
+#include <QSharedPointer>
 
 // Forword declaration
 class QString;
@@ -18,15 +19,19 @@ enum EFieldType
 {
     Int				= 0x01,
     String			= 0x02,
-    DateTime		= 0x03,
+    DateTime			= 0x03,
 };
 
 
-struct SField
+typedef QString Field;
+typedef QStringList FieldList;
+
+struct SFieldInfo
 {
-    QString         m_sName;
-    EFieldType      m_eType;
-};
+	Field		fieldID;
+	QString		sName;
+	EFieldType	eType;
+}
 
 
 ////////////////////////////////////////////////////////////////
@@ -36,9 +41,9 @@ struct SField
 class IDataDirectory
 {
 public:
-    typedef QVector<SField>  t_filedArray;
-
-	virtual t_filedArray getFields() const = 0;
+	// Get field list of all field types
+	virtual FieldList getFields() const = 0;
+	// Get values as QVariant of field
 	virtual QVariantList getFieldValues() const = 0;
 };
 ////////////////////////////////////////////////////////////////
@@ -46,28 +51,46 @@ public:
 
 enum ESelectionPatten
 {
-    valueSelection			= 0x01,
+	// Default selection (all Field's valus are selected)
+	Default		0x01;
+	// Coustom selection
+	Custom		0x02;
 };
 
 ////////////////////////////////////////////////////////////////
 //
-// SFieldValueSelection structure
+// class CSelection
 //
-struct SFieldValueSelection : public SFiled
+class CSelection
 {
-	ESelectionPatten    eSelectionType;
-	QString				sPattern;
-    QVariantList        arrSelectedValues;
-};
-////////////////////////////////////////////////////////////////
+public:
+	struct SFieldValueSelection
+	{	
+		ESelectionPatten    	eSelectionType;
+		QString			sPattern;
+    		QVariantList        	arrSelectedValues;
+	};
 
-////////////////////////////////////////////////////////////////
-//
-// SSelection structure
-//
-struct SSelection
-{
+privte:
 	QVector<SFieldValueSelection>		vecSelection;
+};
+////////////////////////////////////////////////////////////////
+
+// This interface provide data which was selected and loaded
+class IDataContainer;
+typedef QSharedPointer<IDataContainer*> IDataContainerPtr;
+
+////////////////////////////////////////////////////////////////
+//
+// Interfaces IDataProvider
+//
+class IDataProvider
+{
+privte:
+	// Set field's data selection
+	void setSelection(CSelection const& oSelection) = 0;
+	// Get Data corresponding of selection
+	IDataContainer GetData(FieldList const& oFiledList) = 0;
 };
 ////////////////////////////////////////////////////////////////
 
