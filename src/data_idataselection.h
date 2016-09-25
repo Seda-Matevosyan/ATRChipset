@@ -28,7 +28,7 @@ typedef QStringList FieldList;
 
 struct SFieldInfo
 {
-	Field		fieldID;
+	Field		FieldID;
 	QString		sName;
 	EFieldType	eType;
 }
@@ -51,10 +51,10 @@ public:
 
 enum ESelectionPatten
 {
-	// Default selection (all Field's valus are selected)
-	Default		0x01;
+	// Default selection (all Field valus are selected)
+	All			0x01;
 	// Coustom selection
-	Custom		0x02;
+	ValueSelection		0x02;
 };
 
 ////////////////////////////////////////////////////////////////
@@ -77,8 +77,8 @@ privte:
 ////////////////////////////////////////////////////////////////
 
 // This interface provide data which was selected and loaded
-class IDataContainer;
-typedef QSharedPointer<IDataContainer*> IDataContainerPtr;
+class IFieldCollection;
+typedef QSharedPointer<IFieldCollection> IFieldCollectionPtr;
 
 ////////////////////////////////////////////////////////////////
 //
@@ -86,11 +86,11 @@ typedef QSharedPointer<IDataContainer*> IDataContainerPtr;
 //
 class IDataProvider
 {
-privte:
-	// Set field's data selection
+public:
+	// Set field data selection
 	void setSelection(CSelection const& oSelection) = 0;
 	// Get Data corresponding of selection
-	IDataContainer GetData(FieldList const& oFiledList) = 0;
+	IFieldCollectionPtr GetData(FieldList const& lstField) = 0;
 };
 ////////////////////////////////////////////////////////////////
 
