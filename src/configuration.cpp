@@ -20,7 +20,7 @@ QString const CConfiguration::sConfigVersion = QString("configversion");
 CConfiguration::CConfiguration()
     : m_sName(),
       m_sType(),
-      m_nVersion(0.0),
+      m_nVersion(0),
       m_mapParam()
 {
 
@@ -131,7 +131,7 @@ void CConfiguration::reset()
 {
     m_sName.clear();
     m_sType.clear();
-    m_nVersion = 0.0;
+    m_nVersion = 0;
     m_mapParam.clear();
 }
 
