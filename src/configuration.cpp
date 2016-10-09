@@ -2,8 +2,19 @@
 
 #include <configuration.h>
 #include <QFile>
-#include <QXmlStreamWriter>
-#include <QXmlStreamReader>
+#include <QByteArray>
+#include <QJsonDocument>
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QJsonValue>
+
+
+
+QString const CConfiguration::sConfigDescription = QString("configDescription");
+QString const CConfiguration::sConfigParameters = QString("configparameters");
+QString const CConfiguration::sConfigName = QString("configname");
+QString const CConfiguration::sConfigType = QString("configtype");
+QString const CConfiguration::sConfigVersion = QString("configversion");
 
 
 CConfiguration::CConfiguration()
@@ -16,7 +27,7 @@ CConfiguration::CConfiguration()
 }
 
 
-CConfiguration::CConfiguration(QString const& sName, QString const& sType, double nVersion)
+CConfiguration::CConfiguration(QString const& sName, QString const& sType, int nVersion)
     : m_sName(sName),
       m_sType(sType),
       m_nVersion(nVersion),
@@ -29,6 +40,14 @@ CConfiguration::CConfiguration(QString const& sName, QString const& sType, doubl
 CConfiguration::~CConfiguration()
 {
 
+}
+
+
+CConfiguration CConfiguration::loadConfigFromFile(QString const & sPath)
+{
+	CConfiguration oConfig;
+	oConfig.load(sPath);
+	return oConfig;
 }
 
 
@@ -56,15 +75,20 @@ QString CConfiguration::getType() const
 }
 
 
-void CConfiguration::setVersion(double nVersion)
+void CConfiguration::setVersion(int nVersion)
 {
     m_nVersion = nVersion;
 }
 
 
-double CConfiguration::getVersion() const
+int CConfiguration::getVersion() const
 {
     return m_nVersion;
+}
+
+bool CConfiguration::isValid() const
+{
+	return (m_sName.isEmpty() || m_sType.isEmpty() || m_nVersion <= 0);
 }
 
 
@@ -79,7 +103,7 @@ QVariant CConfiguration::getParameter(QString const& sKey) const
     auto it = m_mapParam.find(sKey);
     if (it != m_mapParam.end())
         return it.value();
-    return QVariant();
+    return QString();
 }
 
 
@@ -118,117 +142,63 @@ void CConfiguration::clearParameters()
 }
 
 
-bool CConfiguration::load(QString const& sPath)
+void CConfiguration::load(QString const& sPath)
 {
-    QFile xmlConfig(sPath);
+	reset();
+    QFile configFile(sPath);
     // Open file only for reading
-    if (xmlConfig.open(QFile::ReadOnly))
+    if (configFile.open(QFile::ReadOnly | QFile::Text))
     {
-        // Creat xml reader
-        QXmlStreamReader xmlReader(&xmlConfig);
-        while(!xmlReader.atEnd())
-        {
-            xmlReader.readNext();
-            if (xmlReader.isStartDocument())
-               continue;
+		QJsonDocument const jsonDoc = QJsonDocument::fromJson(configFile.readAll());
+		configFile.close();
+		
+		if (!jsonDoc.isEmpty() && jsonDoc.isObject())
+		{
+			QJsonObject rootObject = jsonDoc.object();
+			if (rootObject.value(sConfigDescription).isObject())
+			{	// Read config descriptors
+				QJsonObject descObject = rootObject.value(sConfigDescription).toObject();
+				m_sName = descObject.value(sConfigName).toString();
+				m_sType = descObject.value(sConfigType).toString();
+				m_nVersion = descObject.value(sConfigVersion).toInt();
 
-            if (xmlReader.isStartElement() && xmlReader.name() == "Configuration")
-            {   // Read config information
-                QXmlStreamAttributes oAttr = xmlReader.attributes();
-                m_sName = oAttr.value("Name").toString();
-                m_sType = oAttr.value("Type").toString();
-                m_nVersion = oAttr.value("Version").toDouble();
+				if (rootObject.value(sConfigParameters).isObject())
+				{	// Read config parameters
+					QJsonObject paramObject = rootObject.value(sConfigParameters).toObject();
+					m_mapParam = paramObject.toVariantHash();
+				}
+			}
+		}
 
-            }
-            else if (xmlReader.isStartElement() && xmlReader.name() == "Parameters")
-            {   // Read config parameters
-                xmlReader.readNext();
-                while(!xmlReader.atEnd())
-                {
-                    QString sKey = xmlReader.name().toString();
-                    QString sType = xmlReader.attributes().value("ParamType").toString();
-                    QString sValue = xmlReader.readElementText();
-                    QVariant value;
-                    if (sKey.isEmpty() || sType.isEmpty() && sValue.isEmpty())
-                    {
-                        xmlReader.readNext();
-                        continue;
-                    }
-
-                    if (sType == "bool")
-                    {
-                        if (sValue == "true")
-                            value = QVariant(true);
-                        else
-                            value = QVariant(false);
-                        m_mapParam.insert(sKey, value);
-                    }
-                    else if (sType == "int")
-                    {
-                        value = QVariant(sValue.toInt());
-                        m_mapParam.insert(sKey, value);
-                    }
-                    else if (sType == "double")
-                    {
-                        value = QVariant(sValue.toDouble());
-                        m_mapParam.insert(sKey, value);
-                    }
-                    else if (sType == "QString")
-                    {
-                        value = QVariant(sValue);
-                        m_mapParam.insert(sKey, value);
-                    }
-                    xmlReader.readNext();
-                }
-            }
-        }
-
-        xmlReader.clear();
-        xmlConfig.close();
-
-        return true;
     }
 
-    return false;
 }
 
 
-bool CConfiguration::save(QString const& sPath) const
+void CConfiguration::save(QString const& sPath) const
 {
-    // Create File
-    QFile xmlConfig(sPath);
+    QFile configFile(sPath);
     // Open file only for writing
-    if (xmlConfig.open(QFile::WriteOnly))
+    if (configFile.open(QFile::WriteOnly | QFile::Text))
     {
-        // Create xml write
-        QXmlStreamWriter xmlWriter(&xmlConfig);
-        xmlWriter.setAutoFormatting(true);
+		QJsonObject rootObject;
+		// Write config descriptors
+		QJsonObject descObject;
+		descObject[sConfigName] = m_sName;
+		descObject[sConfigType] = m_sType;
+		descObject[sConfigVersion] = m_nVersion;
+		rootObject[sConfigDescription] = descObject;
+		
+		// Write config parameters
+		QJsonObject paramObject = QJsonObject::fromVariantHash(m_mapParam);
+		rootObject[sConfigParameters] = paramObject;
 
-        // Write config information
-        xmlWriter.writeStartDocument();
-        xmlWriter.writeStartElement("Configuration");
-        xmlWriter.writeAttribute("Name", m_sName);
-        xmlWriter.writeAttribute("Type", m_sType);
-        xmlWriter.writeAttribute("Version", QString::number(m_nVersion));
-
-        // Write parameters
-        xmlWriter.writeStartElement("Parameters");
-        for (auto it = m_mapParam.begin(); it != m_mapParam.end(); ++it)
-        {
-            xmlWriter.writeStartElement(it.key());
-            xmlWriter.writeAttribute("ParamType", it.value().typeName());
-            xmlWriter.writeCharacters(it.value().toString());
-            xmlWriter.writeEndElement();
-        }
-        xmlWriter.writeEndElement();
-
-        xmlWriter.writeEndElement();
-        xmlWriter.writeEndDocument();
-        xmlConfig.close();
-
-        return true;
+		// Save data
+		QJsonDocument jsonDoc(rootObject);
+		QByteArray data = jsonDoc.toJson(QJsonDocument::Indented);
+		configFile.write(data);
+        configFile.close();
     }
-    return false;
 }
 
 
