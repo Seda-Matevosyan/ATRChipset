@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
 	config.setParameter("lastname", QVariant("Gevorgyan"));
 	config.setParameter("age", QVariant(20));
 	config.setParameter("location", QVariant("Artashat"));
-	config.setParameter("height", QVariant(80));
+	config.setParameter("height", QVariant(81));
 	config.setParameter("weight", QVariant(175.5));
 
 	// Save config
