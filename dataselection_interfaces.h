@@ -3,12 +3,13 @@
 #ifndef DATA_SELECTION_INTERFACES_H
 #define DATA_SELECTION_INTERFACES_H
 
+
+
 #include <QString>
 #include <QVector>
 #include <QVariant>
 #include <QVariantList>
 #include <QSharedPointer>
-
 
 
 namespace data

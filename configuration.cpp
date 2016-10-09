@@ -9,6 +9,7 @@
 #include <QJsonValue>
 
 
+
 QString const CConfiguration::sConfigDescription = QString("configDescription");
 QString const CConfiguration::sConfigParameters = QString("configparameters");
 QString const CConfiguration::sConfigName = QString("configname");

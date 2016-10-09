@@ -2,6 +2,7 @@
 #define CONFIGURATION_H
 
 
+
 // Forward seclaration
 #include <QString>
 #include <QVariant>
