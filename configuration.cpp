@@ -2,8 +2,18 @@
 
 #include <configuration.h>
 #include <QFile>
-#include <QXmlStreamWriter>
-#include <QXmlStreamReader>
+#include <QByteArray>
+#include <QJsonDocument>
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QJsonValue>
+
+
+QString const CConfiguration::sConfigDescription = QString("configDescription");
+QString const CConfiguration::sConfigParameters = QString("configparameters");
+QString const CConfiguration::sConfigName = QString("configname");
+QString const CConfiguration::sConfigType = QString("configtype");
+QString const CConfiguration::sConfigVersion = QString("configversion");
 
 
 CConfiguration::CConfiguration()
@@ -75,6 +85,11 @@ int CConfiguration::getVersion() const
     return m_nVersion;
 }
 
+bool CConfiguration::isValid() const
+{
+	return (m_sName.isEmpty() || m_sType.isEmpty() || m_nVersion <= 0);
+}
+
 
 void CConfiguration::setParameter(QString const& sKey, QVariant const& value)
 {
@@ -87,7 +102,7 @@ QVariant CConfiguration::getParameter(QString const& sKey) const
     auto it = m_mapParam.find(sKey);
     if (it != m_mapParam.end())
         return it.value();
-    return QVariant();
+    return QString();
 }
 
 
@@ -126,34 +141,63 @@ void CConfiguration::clearParameters()
 }
 
 
-bool CConfiguration::load(QString const& sPath)
+void CConfiguration::load(QString const& sPath)
 {
+	reset();
     QFile configFile(sPath);
     // Open file only for reading
     if (configFile.open(QFile::ReadOnly | QFile::Text))
     {
-     
-
+		QJsonDocument const jsonDoc = QJsonDocument::fromJson(configFile.readAll());
 		configFile.close();
-        return true;
+		
+		if (!jsonDoc.isEmpty() && jsonDoc.isObject())
+		{
+			QJsonObject rootObject = jsonDoc.object();
+			if (rootObject.value(sConfigDescription).isObject())
+			{	// Read config descriptors
+				QJsonObject descObject = rootObject.value(sConfigDescription).toObject();
+				m_sName = descObject.value(sConfigName).toString();
+				m_sType = descObject.value(sConfigType).toString();
+				m_nVersion = descObject.value(sConfigVersion).toInt();
+
+				if (rootObject.value(sConfigParameters).isObject())
+				{	// Read config parameters
+					QJsonObject paramObject = rootObject.value(sConfigParameters).toObject();
+					m_mapParam = paramObject.toVariantHash();
+				}
+			}
+		}
+
     }
 
-    return false;
 }
 
 
-bool CConfiguration::save(QString const& sPath) const
+void CConfiguration::save(QString const& sPath) const
 {
     QFile configFile(sPath);
     // Open file only for writing
     if (configFile.open(QFile::WriteOnly | QFile::Text))
     {
+		QJsonObject rootObject;
+		// Write config descriptors
+		QJsonObject descObject;
+		descObject[sConfigName] = m_sName;
+		descObject[sConfigType] = m_sType;
+		descObject[sConfigVersion] = m_nVersion;
+		rootObject[sConfigDescription] = descObject;
+		
+		// Write config parameters
+		QJsonObject paramObject = QJsonObject::fromVariantHash(m_mapParam);
+		rootObject[sConfigParameters] = paramObject;
 
-        
+		// Save data
+		QJsonDocument jsonDoc(rootObject);
+		QByteArray data = jsonDoc.toJson(QJsonDocument::Indented);
+		configFile.write(data);
         configFile.close();
-        return true;
     }
-    return false;
 }
 
 

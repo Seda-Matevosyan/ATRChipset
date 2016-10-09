@@ -1,0 +1,15 @@
+{
+    "configDescription": {
+        "configname": "Person",
+        "configtype": "Human",
+        "configversion": 1
+    },
+    "configparameters": {
+        "age": 20,
+        "firstname": "Mesrop",
+        "height": 80,
+        "lastname": "Gevorgyan",
+        "location": "Artashat",
+        "weight": 175.5
+    }
+}

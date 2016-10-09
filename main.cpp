@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
 
 	qDebug() << "Is empty: " << config.isEmpty();
 	qDebug() << "Param count: " << config.getParamCount();
-	qDebug() << "Is contained 'age' parameter: " << config.isContained("string");
+	qDebug() << "Is contained 'age' parameter: " << config.isContained("age");
 
 	QVariant value;
 	value = config.getParameter("firstname");
@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
 
 	value = config.getParameter("location");
 	if (value.isValid())
-		qDebug() << value.toDouble();
+		qDebug() << value.toString();
 
 	value = config.getParameter("height");
 	if (value.isValid())
