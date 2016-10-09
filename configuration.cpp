@@ -1,0 +1,192 @@
+
+
+#include <configuration.h>
+#include <QFile>
+#include <QXmlStreamWriter>
+#include <QXmlStreamReader>
+
+
+CConfiguration::CConfiguration()
+    : m_sName(),
+      m_sType(),
+      m_nVersion(0.0),
+      m_mapParam()
+{
+
+}
+
+
+CConfiguration::CConfiguration(QString const& sName, QString const& sType, int nVersion)
+    : m_sName(sName),
+      m_sType(sType),
+      m_nVersion(nVersion),
+      m_mapParam()
+{
+
+}
+
+
+CConfiguration::~CConfiguration()
+{
+
+}
+
+
+CConfiguration CConfiguration::loadConfigFromFile(QString const & sPath)
+{
+	CConfiguration oConfig;
+	oConfig.load(sPath);
+	return oConfig;
+}
+
+
+void CConfiguration::setName(QString const& sName)
+{
+    m_sName = sName;
+}
+
+
+QString CConfiguration::getName() const
+{
+    return m_sName;
+}
+
+
+void CConfiguration::setType(QString const& sType)
+{
+    m_sType = sType;
+}
+
+
+QString CConfiguration::getType() const
+{
+    return m_sType;
+}
+
+
+void CConfiguration::setVersion(int nVersion)
+{
+    m_nVersion = nVersion;
+}
+
+
+int CConfiguration::getVersion() const
+{
+    return m_nVersion;
+}
+
+
+void CConfiguration::setParameter(QString const& sKey, QVariant const& value)
+{
+    m_mapParam[sKey] = value;
+}
+
+
+QVariant CConfiguration::getParameter(QString const& sKey) const
+{
+    auto it = m_mapParam.find(sKey);
+    if (it != m_mapParam.end())
+        return it.value();
+    return QVariant();
+}
+
+
+int CConfiguration::getParamCount() const
+{
+    return m_mapParam.count();
+}
+
+
+bool CConfiguration::isEmpty() const
+{
+    return m_mapParam.isEmpty();
+}
+
+
+bool CConfiguration::isContained(QString const& sKey) const
+{
+    if (m_mapParam.find(sKey) != m_mapParam.end())
+        return true;
+    return false;
+}
+
+
+void CConfiguration::reset()
+{
+    m_sName.clear();
+    m_sType.clear();
+    m_nVersion = 0.0;
+    m_mapParam.clear();
+}
+
+
+void CConfiguration::clearParameters()
+{
+    m_mapParam.clear();
+}
+
+
+bool CConfiguration::load(QString const& sPath)
+{
+    QFile configFile(sPath);
+    // Open file only for reading
+    if (configFile.open(QFile::ReadOnly | QFile::Text))
+    {
+     
+
+		configFile.close();
+        return true;
+    }
+
+    return false;
+}
+
+
+bool CConfiguration::save(QString const& sPath) const
+{
+    QFile configFile(sPath);
+    // Open file only for writing
+    if (configFile.open(QFile::WriteOnly | QFile::Text))
+    {
+
+        
+        configFile.close();
+        return true;
+    }
+    return false;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
