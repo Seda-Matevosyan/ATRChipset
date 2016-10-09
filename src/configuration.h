@@ -2,9 +2,9 @@
 #define CONFIGURATION_H
 
 
+// Forward seclaration
 #include <QString>
 #include <QVariant>
-#include <QMap>
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -14,23 +14,29 @@
 class CConfiguration
 {
 public:
+	// Static functions
+	// Load configuration from file
+	static CConfiguration loadConfigFromFile(QString const& sPath);
+
+public:
     // Default constructor
     CConfiguration();
     // Init Constructor
-    CConfiguration(QString const& sName, QString const& sType, double nVersion);
+    CConfiguration(QString const& sName, QString const& sType, int nVersion);
     // Destructor
     ~CConfiguration();
 
     //
     // Interface
     //
-    // Get/Set config information
+    // Get/Set config descriptors
     void setName(QString const& sName);
     QString getName() const;
     void setType(QString const& sType);
     QString getType() const;
-    void setVersion(double nVersion);
-    double getVersion() const;
+    void setVersion(int nVersion);
+    int getVersion() const;
+	bool isValid() const;
 
     // Get/Set config parameters
     void setParameter(QString const& sKey, const QVariant& value);
@@ -45,22 +51,30 @@ public:
     void reset();
 
     // Load configuration from xml file
-    bool load(QString const& sPath);
+    void load(QString const& sPath);
     // Save configuration into xml file
-    bool save(QString const& sPath) const;
+    void save(QString const& sPath) const;
+
+private:
+	// Static const keys for config description
+	static QString const sConfigDescription;
+	static QString const sConfigParameters;
+	static QString const sConfigName;
+	static QString const sConfigType;
+	static QString const sConfigVersion;
 
 private:
     //
     // members
     //
 
-    // Information about config
-    QString                     m_sName;
-    QString                     m_sType;
-    double                      m_nVersion;
+    // Config description
+    QString							m_sName;
+    QString							m_sType;
+    int								m_nVersion;
 
     // Config parameters
-    QMap<QString, QVariant>     m_mapParam;
+    QVariantHash					m_mapParam;
 };
 //////////////////////////////////////////////////////////////////////////
 
