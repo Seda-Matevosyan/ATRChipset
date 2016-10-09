@@ -1,10 +1,10 @@
 {
     "configDescription": {
-        "configname": "Person",
-        "configtype": "Human",
-        "configversion": 1
+        "configName": "Person",
+        "configType": "Human",
+        "configVersion": 1
     },
-    "configparameters": {
+    "configParameters": {
         "age": 20,
         "firstname": "Mesrop",
         "height": 81,

@@ -11,10 +11,10 @@
 
 
 QString const CConfiguration::sConfigDescription = QString("configDescription");
-QString const CConfiguration::sConfigParameters = QString("configparameters");
-QString const CConfiguration::sConfigName = QString("configname");
-QString const CConfiguration::sConfigType = QString("configtype");
-QString const CConfiguration::sConfigVersion = QString("configversion");
+QString const CConfiguration::sConfigParameters = QString("configParameters");
+QString const CConfiguration::sConfigName = QString("configName");
+QString const CConfiguration::sConfigType = QString("configType");
+QString const CConfiguration::sConfigVersion = QString("configVersion");
 
 
 CConfiguration::CConfiguration()
